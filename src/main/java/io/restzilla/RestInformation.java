@@ -36,6 +36,8 @@ public class RestInformation {
 
     private final String basePath;
     
+    private final String cacheName;
+    
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public RestInformation(Class<?> baseClass) {
         RestResource annotation = findAnnotation(baseClass, RestResource.class);
@@ -51,6 +53,7 @@ public class RestInformation {
         
         this.resultInfo = resolveResultInfo();
         this.basePath = resolveBasePath(baseClass);
+        this.cacheName = annotation.cache();
     }
 
     private String resolveBasePath(Class<?> baseClass) {
@@ -86,6 +89,15 @@ public class RestInformation {
      */
     public String getBasePath() {
         return basePath;
+    }
+    
+    /**
+     * Retrieve the cache name, if any.
+     * 
+     * @return the cacheName
+     */
+    public String getCacheName() {
+        return cacheName;
     }
     
     /**

@@ -48,6 +48,12 @@ public @interface RestResource {
      */
     String basePath() default "";
     
+    /**
+     * (Optional) the cache key.
+     * @return the cache key
+     */
+    String cache() default "";
+
     //
     // Query
     //

@@ -244,19 +244,29 @@ public class SimpleResourceHandlerMappingFactory implements ResourceHandlerMappi
             String json = CharStreams.toString(request.getReader()).trim();
             Class<?> inputType = information.getInputType(information.create());
 
+            Object output = null;
+
             if (json.startsWith(ARRAY_JSON_START)) {
                 List<Object> inputs = objectMapper.readValue(json, objectMapper.getTypeFactory().constructCollectionType(List.class, inputType));
                 List<Object> results = new ArrayList<Object>();
                 for (Object input : inputs) {
                     results.add(doCreate(input, json));
                 }
-                return results;
+                output = results;
             } else {
                 Object input = objectMapper.readValue(json, inputType);
-                return doCreate(input, json);
+                output = doCreate(input, json);
             }
+            
+            clearCache();
+            return output;
         }
         
+        private void clearCache() {
+            String cacheName = information.getCacheName();
+            
+        }
+
         private void ensureIsModifiable(String[] expressions, HttpServletRequest request) {
             if (!hasAnyNotBlank(expressions)) {
                 expressions = information.getModifySecured();
@@ -291,7 +301,9 @@ public class SimpleResourceHandlerMappingFactory implements ResourceHandlerMappi
             String json = CharStreams.toString(request.getReader());
             Object input = objectMapper.readValue(json, information.getInputType(information.update()));
             boolean patch = request.getMethod().equals(PATCH.name());
-            return doUpdate(id, json, validate(input), patch);
+            Object result = doUpdate(id, json, validate(input), patch);
+            clearCache();
+            return result;
         }
         
         private Object doUpdate(Serializable id, String json, Object input, boolean patch) throws BindException {
@@ -309,7 +321,9 @@ public class SimpleResourceHandlerMappingFactory implements ResourceHandlerMappi
             ensureIsModifiable(information.delete().secured(), request);
             Persistable<?> entity = entityService.getOne(extractId(request));
             entityService.delete(entity);
-            return mapToResult(entity, information.delete());
+            Object result = mapToResult(entity, information.delete());
+            clearCache();
+            return result;
         }
         
         /**
